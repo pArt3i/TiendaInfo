@@ -158,13 +158,21 @@ public class Main {
             System.out.println("ID: " + f.getCod() + " | Nombre: " + f.getNombre());
         }
     }
+
     private static void buscarFabricanteNombre() {
         System.out.println("\n--- BUSCAR FABRICANTE POR NOMBRE ---");
         System.out.print("Introduzca el nombre del fabricante para saber su codigo: ");
         String nombre = sc.nextLine();
+
         Fabricante fabricante = fabricanteDAO.buscarPorNombre(nombre);
-        System.out.println("Nombre actual : " + fabricante.getCod());
+
+        if (fabricante == null) {
+            System.out.println("No existe ningún fabricante con ese nombre.");
+        } else {
+            System.out.println("Código del fabricante: " + fabricante.getCod());
+        }
     }
+
 
     private static void crearFabricante() {
         System.out.println("Introduce el nombre del fabricante: ");
