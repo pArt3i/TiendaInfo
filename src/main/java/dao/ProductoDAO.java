@@ -24,9 +24,7 @@ public class ProductoDAO {
     // Nueva funcionalidad para listar productos de un fabricante concreto
     public List<Producto> buscarPorFabricante(String nombreFabricante) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Producto p WHERE LOWER(p.fabricante.nombre) = LOWER(:nom)", Producto.class)
-                    .setParameter("nom", nombreFabricante)
-                    .getResultList();
+            return session.createQuery("FROM Producto p WHERE LOWER(p.fabricante.nombre) = LOWER(:nom)", Producto.class).setParameter("nom", nombreFabricante).getResultList();
         }
     }
 
@@ -34,17 +32,11 @@ public class ProductoDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-
-            // Lógica "BIC": buscar fabricante o crearlo si no existe
-            Fabricante fabricante = session.createQuery("FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nomb)", Fabricante.class)
-                    .setParameter("nomb", nombreFabricante)
-                    .uniqueResult();
-
+            Fabricante fabricante = session.createQuery("FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nomb)", Fabricante.class).setParameter("nomb", nombreFabricante).uniqueResult();
             if (fabricante == null) {
                 fabricante = new Fabricante(nombreFabricante);
                 session.persist(fabricante);
             }
-
             nuevoProducto.setFabricante(fabricante);
             session.persist(nuevoProducto);
             tx.commit();

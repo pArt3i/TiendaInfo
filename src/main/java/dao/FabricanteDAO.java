@@ -22,14 +22,10 @@ public class FabricanteDAO {
                     .uniqueResult();
         }
     }
-
-    // Nueva funcionalidad para el menú de búsqueda
     public Fabricante buscarPorNombreProducto(String nombreProducto) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT p.fabricante FROM Producto p WHERE LOWER(p.nombre) = LOWER(:prod)";
-            return session.createQuery(hql, Fabricante.class)
-                    .setParameter("prod", nombreProducto)
-                    .uniqueResult();
+            return session.createQuery(hql, Fabricante.class).setParameter("prod", nombreProducto).uniqueResult();
         }
     }
 
