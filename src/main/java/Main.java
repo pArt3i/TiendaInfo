@@ -18,6 +18,7 @@ public class Main {
             System.out.print("Opcion: ");
             opcion = sc.nextInt();
             sc.nextLine();
+
             switch (opcion) {
                 case 0:
                     System.out.println("Saliendo del programa");
@@ -49,7 +50,7 @@ public class Main {
                                             buscarFabricantePorProducto();
                                             break;
                                         case 4:
-
+                                            listarProductosDeFabricante();
                                             break;
                                         case 0:
                                             System.out.println("Saliendo de busqueda...");
@@ -85,16 +86,7 @@ public class Main {
                                 crearProducto();
                                 break;
                             case 2:
-                                //menuBuscarProducto()
-                                do {
-                                    System.out.println("\n1. Ver todos\n0. Volver");
-                                    System.out.print("Opcion: ");
-                                    opcion3 = sc.nextInt();
-                                    sc.nextLine();
-                                    if (opcion3 == 1) {
-                                        // listar productos
-                                    }
-                                } while (opcion3 != 0);
+                                listarProductos();
                                 break;
                             case 3:
                                 modificarProducto();
@@ -154,73 +146,47 @@ public class Main {
     private static void listarFabricantes() {
         var fabricantes = fabricanteDAO.listarTodos();
         System.out.println("\n--- LISTADO DE FABRICANTES ---");
+        System.out.println("SE HAN ENCONTRADO " + fabricantes.size() + " REGISTROS:");
         for (var f : fabricantes) {
-            System.out.println("ID: " + f.getCod() + " | Nombre: " + f.getNombre());
+            System.out.println("-> ID: " + f.getCod() + " | Marca: " + f.getNombre());
         }
     }
 
     private static void buscarFabricanteNombre() {
-        System.out.println("\n--- BUSCAR FABRICANTE POR NOMBRE ---");
-        System.out.print("Introduzca el nombre del fabricante para saber su codigo: ");
+        System.out.print("Introduzca el nombre del fabricante: ");
         String nombre = sc.nextLine();
-        Fabricante fabricante = fabricanteDAO.buscarPorNombreProducto(nombre);
+        Fabricante fabricante = fabricanteDAO.buscarPorNombre(nombre);
         if (fabricante == null) {
             System.out.println("No existe ningún fabricante con ese nombre.");
         } else {
-            System.out.println("Código del fabricante: " + fabricante.getCod());
+            System.out.println("SE HA ENCONTRADO 1 REGISTRO:");
+            System.out.println("-> ID: " + fabricante.getCod() + " Marca: " + fabricante.getNombre());
         }
     }
-
-    private static void buscarFabricantePorProducto() {
-        System.out.println("\n--- BUSCAR FABRICANTE POR PRODUCTO ---");
-        System.out.print("Introduce el nombre del producto (ej. Portatil): ");
-        String nombreProd = sc.nextLine();
-        Fabricante f = fabricanteDAO.buscarPorNombreProducto(nombreProd);
-        if (f != null) {
-            System.out.println("El fabricante de '" + nombreProd + "' es: " + f.getNombre() + " (ID: " + f.getCod() + ")");
-        } else {
-            System.out.println("No se encontró ningún fabricante para ese producto.");
-        }
-    }
-
-    private static void listarProductosDeFabricante() {
-        System.out.println("\n--- PRODUCTOS POR FABRICANTE ---");
-        System.out.print("Introduce el nombre del fabricante (ej. Asus): ");
-        String nombreFab = sc.nextLine();
-        List<Producto> productos = fabricanteDAO.obtenerProductosDeFabricante(nombreFab);
-        if (productos.isEmpty()) {
-            System.out.println("No se encontraron productos para el fabricante: " + nombreFab);
-        } else {
-            System.out.println("Productos de " + nombreFab + ":");
-            for (Producto p : productos) {
-                System.out.println(" -> ID: " + p.getCod() + " | Producto: " + p.getNombre() + " | Precio: " + p.getPrecio());
-            }
-        }
-    }
-
 
     private static void crearFabricante() {
-        System.out.println("Introduce el nombre del fabricante: ");
+        System.out.print("Introduce el nombre del fabricante: ");
         String nombre = sc.nextLine();
         if (nombre.isEmpty()) {
-            System.out.println("El nombre esta vacio");
+            System.out.println("El nombre no puede estar vacío.");
+            return;
+        }
+        if (fabricanteDAO.buscarPorNombre(nombre) != null) {
+            System.out.println("Ya existe un fabricante con ese nombre.");
             return;
         }
         try {
             Fabricante fabricante = new Fabricante(nombre);
             fabricanteDAO.guardarFabricante(fabricante);
-            System.out.println("Fabricante guardado.");
+            System.out.println("ÉXITO: Fabricante creado con ID " + fabricante.getCod());
         } catch (Exception ex) {
             System.out.println("Error al intentar crear el fabricante");
         }
     }
 
     private static void modificarFabricante() {
-        System.out.println("--ACTUALIZAR FABRICANTE--");
-        listarFabricantes();
         System.out.print("Introduce el ID del fabricante: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        int id = sc.nextInt(); sc.nextLine();
         Fabricante fabricante = fabricanteDAO.buscarPorId(id);
         if (fabricante == null) {
             System.out.println("Error: No existe ningún fabricante con ID " + id);
@@ -229,96 +195,90 @@ public class Main {
         System.out.println("Nombre actual : " + fabricante.getNombre());
         System.out.print("Introduce el nuevo nombre: ");
         String nombre = sc.nextLine();
-        if (nombre.isEmpty()) {
-            System.out.println("El nombre esta vacio");
-            return;
-        }
+        if (nombre.isEmpty()) return;
         fabricante.setNombre(nombre);
-        try {
-            fabricanteDAO.actualizarFabricante(fabricante);
-            System.out.println("EXITO: Fabricante actualizado");
-        } catch (Exception ex) {
-            System.out.println("Error al intentar modificar el fabricante");
-        }
+        fabricanteDAO.actualizarFabricante(fabricante);
+        System.out.println("ÉXITO: Fabricante actualizado.");
     }
 
     private static void borrarFabricante() {
-        listarFabricantes();
         System.out.print("Introduce el ID del fabricante a borrar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        int id = sc.nextInt(); sc.nextLine();
         Fabricante fabricante = fabricanteDAO.buscarPorId(id);
         if (fabricante == null) {
-            System.out.println("Error: No existe ningún fabricante con ID " + id);
+            System.out.println("Error: No existe el ID " + id);
             return;
         }
-        System.out.println("Fabricante encontrado: " + fabricante.getNombre());
-        try {
+        System.out.print("¿Estás seguro de borrar a " + fabricante.getNombre() + "? (s/n): ");
+        if (sc.nextLine().equalsIgnoreCase("s")) {
             fabricanteDAO.borrarFabricante(fabricante);
-            System.out.println("ÉXITO: Fabricante borrado correctamente.");
-        } catch (Exception ex) {
-            System.out.println("Error: No se pudo borrar el fabricante.");
+            System.out.println("ÉXITO: Fabricante eliminado.");
         }
     }
 
     private static void crearProducto() {
-        System.out.println("Introduce el nombre del producto: ");
+        System.out.print("Nombre del producto: ");
         String nombre = sc.nextLine();
-        System.out.println("Introduce el precio de producto: ");
-        double precio = sc.nextDouble();
-        sc.nextLine();
-        if (nombre.isEmpty()) {
-            System.out.println("El nombre esta vacio");
-            return;
+        System.out.print("Precio: ");
+        double precio = sc.nextDouble(); sc.nextLine();
+
+        System.out.println("Fabricantes disponibles:");
+        List<Fabricante> fabricantes = fabricanteDAO.listarTodos();
+        for (Fabricante f : fabricantes) {
+            System.out.println("- " + f.getNombre());
         }
-        if (precio < 0) {
-            System.out.println("Precio negativo");
-            return;
-        }
-        try {
-            Producto producto = new Producto();
-            // Falta setear nombre y precio en tu entidad Producto si los tienes
-            productoDAO.guardarProducto(producto);
-            System.out.println("Producto guardado.");
-        } catch (Exception ex) {
-            System.out.println("Error al intentar crear un producto");
+        System.out.print("Nombre del fabricante (si no existe, se creará): ");
+        String nombreFab = sc.nextLine();
+        Producto producto = new Producto();
+        producto.setNombre(nombre);
+        producto.setPrecio(precio);
+        productoDAO.guardarProductoJuntoFabricante(producto, nombreFab);
+        System.out.println("¡Operación finalizada con éxito!");
+    }
+
+    private static void listarProductos() {
+        var productos = productoDAO.listarTodos();
+        for (Producto p : productos) {
+            System.out.println(p.getCod() + ": " + p.getNombre() + " " + p.getPrecio() + " [" + p.getFabricante().getNombre() + "]");
         }
     }
 
     private static void modificarProducto() {
-        System.out.print("Introduce el ID del producto: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-        Producto producto = productoDAO.buscarPorIdProducto(id);
-        if (producto == null) {
-            System.out.println("Error: No existe ningún producto con ID " + id);
-            return;
-        }
-        System.out.print("Introduce el nuevo nombre: ");
-        String nombre = sc.nextLine();
-        // producto.setNombre(nombre); ... etc
-        try {
-            productoDAO.actualizarProducto(producto);
-            System.out.println("EXITO: Producto actualizado");
-        } catch (Exception ex) {
-            System.out.println("Error al intentar modificar el producto");
-        }
+        System.out.print("Introduce el ID del producto a modificar: ");
+        int id = sc.nextInt(); sc.nextLine();
+        System.out.print("Introduce el nuevo precio: ");
+        double precio = sc.nextDouble(); sc.nextLine();
+        productoDAO.actualizarPrecio(id, precio);
+        System.out.println("ÉXITO: Producto actualizado.");
     }
 
     private static void borrarProducto() {
         System.out.print("Introduce el ID del producto a borrar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        int id = sc.nextInt(); sc.nextLine();
         Producto producto = productoDAO.buscarPorIdProducto(id);
-        if (producto == null) {
-            System.out.println("Error: No existe ningún producto con ID " + id);
-            return;
-        }
-        try {
+        if (producto != null) {
             productoDAO.borrarProducto(producto);
-            System.out.println("ÉXITO: Producto borrado correctamente.");
-        } catch (Exception ex) {
-            System.out.println("Error: No se pudo borrar el producto.");
+            System.out.println("ÉXITO: Producto borrado.");
+        }
+    }
+
+    private static void buscarFabricantePorProducto() {
+        System.out.print("Introduce el nombre del producto: ");
+        Fabricante f = fabricanteDAO.buscarPorNombreProducto(sc.nextLine());
+        if (f != null) {
+            System.out.println("-> ID: " + f.getCod() + " Marca: " + f.getNombre());
+        } else {
+            System.out.println("No se encontró el producto.");
+        }
+    }
+
+    private static void listarProductosDeFabricante() {
+        System.out.print("Introduce el nombre del fabricante: ");
+        String nombre = sc.nextLine();
+        List<Producto> prods = productoDAO.buscarPorFabricante(nombre);
+        System.out.println("SE HAN ENCONTRADO " + prods.size() + " REGISTROS ASOCIADOS:");
+        for (Producto p : prods) {
+            System.out.println("-> ID: " + p.getCod() + " Producto: " + p.getNombre());
         }
     }
 }

@@ -5,7 +5,6 @@ import entity.Producto;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import util.HibernateUtil;
-
 import java.util.List;
 
 public class ProductoDAO {
@@ -16,69 +15,53 @@ public class ProductoDAO {
         }
     }
 
-    public void guardarProductoJuntoFabricante(Producto nuevoProducto, String nombreFabricante){
-        Transaction tx = null;
+    public List<Producto> listarTodos() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Producto", Producto.class).getResultList();
+        }
+    }
 
+    // Nueva funcionalidad para listar productos de un fabricante concreto
+    public List<Producto> buscarPorFabricante(String nombreFabricante) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Producto p WHERE LOWER(p.fabricante.nombre) = LOWER(:nom)", Producto.class)
+                    .setParameter("nom", nombreFabricante)
+                    .getResultList();
+        }
+    }
+
+    public void guardarProductoJuntoFabricante(Producto nuevoProducto, String nombreFabricante) {
+        Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            String consulta = "Select * from Fabricante f where LOWER(f.nombre) = LOWER(:nomb)";
-            List<Fabricante> fabricantes = session.createQuery(consulta, Fabricante.class).setParameter("nomb", nombreFabricante).getResultList();
-            Fabricante fabricante;
-            if(!fabricantes.isEmpty()){
-                fabricante = fabricantes.get(0);
-            }else {
+
+            // Lógica "BIC": buscar fabricante o crearlo si no existe
+            Fabricante fabricante = session.createQuery("FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nomb)", Fabricante.class)
+                    .setParameter("nomb", nombreFabricante)
+                    .uniqueResult();
+
+            if (fabricante == null) {
                 fabricante = new Fabricante(nombreFabricante);
                 session.persist(fabricante);
             }
+
             nuevoProducto.setFabricante(fabricante);
             session.persist(nuevoProducto);
             tx.commit();
-
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
-    }
-
-
-    public void actualizarProdcuto(Producto producto) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.merge(producto);
-            tx.commit();
         } catch (Exception ex) {
             if (tx != null) tx.rollback();
         }
     }
 
-    public void actualizar(int id, double precio) {
+    public void actualizarPrecio(int id, double nuevoPrecio) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            Producto producto = session.find(Producto.class, id);
-            producto.setPrecio(precio);
-            tx.commit();
-        } catch (Exception ex) {
-            if (tx != null) tx.rollback();
-        }
-    }
-
-    public void guardarProducto(Producto producto) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.persist(producto);
-            tx.commit();
-        }catch (Exception ex){
-            if (tx!=null) tx.rollback();
-        }
-    }
-
-    public void actualizarProducto(Producto producto) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.merge(producto);
+            Producto p = session.get(Producto.class, id);
+            if (p != null) {
+                p.setPrecio(nuevoPrecio);
+                session.merge(p);
+            }
             tx.commit();
         } catch (Exception ex) {
             if (tx != null) tx.rollback();

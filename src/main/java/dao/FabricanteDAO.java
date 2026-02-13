@@ -1,12 +1,9 @@
 package dao;
 
 import entity.Fabricante;
-import entity.Producto;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import util.HibernateUtil;
-
 import java.util.List;
 
 public class FabricanteDAO {
@@ -17,25 +14,28 @@ public class FabricanteDAO {
         }
     }
 
-    public Fabricante buscarPorNombreProducto(String nombreProducto) {
+    public Fabricante buscarPorNombre(String nombre) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String sql = "SELECT p.fabricante FROM Producto p WHERE p.nombre = :nombreProd";
-            return session.createQuery(sql, Fabricante.class).setParameter("nombreProd", nombreProducto).uniqueResult();
+            return session.createQuery(
+                            "FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nombre)", Fabricante.class)
+                    .setParameter("nombre", nombre)
+                    .uniqueResult();
         }
     }
-    public List<Producto> obtenerProductosDeFabricante(String nombreFabricante) {
+
+    // Nueva funcionalidad para el menú de búsqueda
+    public Fabricante buscarPorNombreProducto(String nombreProducto) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT p FROM Producto p WHERE p.fabricante.nombre = :nombreFab";
-            return session.createQuery(hql, Producto.class)
-                    .setParameter("nombreFab", nombreFabricante)
-                    .getResultList();
+            String hql = "SELECT p.fabricante FROM Producto p WHERE LOWER(p.nombre) = LOWER(:prod)";
+            return session.createQuery(hql, Fabricante.class)
+                    .setParameter("prod", nombreProducto)
+                    .uniqueResult();
         }
     }
 
     public List<Fabricante> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Fabricante> q = session.createQuery("FROM Fabricante", Fabricante.class);
-            return q.getResultList();
+            return session.createQuery("FROM Fabricante", Fabricante.class).getResultList();
         }
     }
 
@@ -45,8 +45,8 @@ public class FabricanteDAO {
             tx = session.beginTransaction();
             session.persist(fabricante);
             tx.commit();
-        }catch (Exception ex){
-            if (tx!=null) tx.rollback();
+        } catch (Exception ex) {
+            if (tx != null) tx.rollback();
         }
     }
 
