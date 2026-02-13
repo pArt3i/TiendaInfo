@@ -3,6 +3,7 @@ import dao.ProductoDAO;
 import entity.Fabricante;
 import entity.Producto;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -16,8 +17,7 @@ public class Main {
             menuPrincipal();
             System.out.print("Opcion: ");
             opcion = sc.nextInt();
-            sc.nextLine(); // Limpiar buffer
-
+            sc.nextLine();
             switch (opcion) {
                 case 0:
                     System.out.println("Saliendo del programa");
@@ -46,10 +46,10 @@ public class Main {
                                             buscarFabricanteNombre();
                                             break;
                                         case 3:
-                                            //buscar por nombre de producto
+                                            buscarFabricantePorProducto();
                                             break;
                                         case 4:
-                                            //buscar por nombre de fabticante y obtener producto asociados
+
                                             break;
                                         case 0:
                                             System.out.println("Saliendo de busqueda...");
@@ -163,13 +163,38 @@ public class Main {
         System.out.println("\n--- BUSCAR FABRICANTE POR NOMBRE ---");
         System.out.print("Introduzca el nombre del fabricante para saber su codigo: ");
         String nombre = sc.nextLine();
-
-        Fabricante fabricante = fabricanteDAO.buscarPorNombre(nombre);
-
+        Fabricante fabricante = fabricanteDAO.buscarPorNombreProducto(nombre);
         if (fabricante == null) {
             System.out.println("No existe ningún fabricante con ese nombre.");
         } else {
             System.out.println("Código del fabricante: " + fabricante.getCod());
+        }
+    }
+
+    private static void buscarFabricantePorProducto() {
+        System.out.println("\n--- BUSCAR FABRICANTE POR PRODUCTO ---");
+        System.out.print("Introduce el nombre del producto (ej. Portatil): ");
+        String nombreProd = sc.nextLine();
+        Fabricante f = fabricanteDAO.buscarPorNombreProducto(nombreProd);
+        if (f != null) {
+            System.out.println("El fabricante de '" + nombreProd + "' es: " + f.getNombre() + " (ID: " + f.getCod() + ")");
+        } else {
+            System.out.println("No se encontró ningún fabricante para ese producto.");
+        }
+    }
+
+    private static void listarProductosDeFabricante() {
+        System.out.println("\n--- PRODUCTOS POR FABRICANTE ---");
+        System.out.print("Introduce el nombre del fabricante (ej. Asus): ");
+        String nombreFab = sc.nextLine();
+        List<Producto> productos = fabricanteDAO.obtenerProductosDeFabricante(nombreFab);
+        if (productos.isEmpty()) {
+            System.out.println("No se encontraron productos para el fabricante: " + nombreFab);
+        } else {
+            System.out.println("Productos de " + nombreFab + ":");
+            for (Producto p : productos) {
+                System.out.println(" -> ID: " + p.getCod() + " | Producto: " + p.getNombre() + " | Precio: " + p.getPrecio());
+            }
         }
     }
 

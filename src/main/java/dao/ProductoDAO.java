@@ -15,9 +15,7 @@ public class ProductoDAO {
             return session.get(Producto.class, id);
         }
     }
-//    public List<Producto> leerProductos(String nombreFabricante){
-//        .getResultList();
-//    }
+
     public void guardarProductoJuntoFabricante(Producto nuevoProducto, String nombreFabricante){
         Transaction tx = null;
 

@@ -1,6 +1,7 @@
 package dao;
 
 import entity.Fabricante;
+import entity.Producto;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -16,13 +17,20 @@ public class FabricanteDAO {
         }
     }
 
-    public Fabricante buscarPorNombre(String nombre) {
+    public Fabricante buscarPorNombreProducto(String nombreProducto) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                            "FROM Fabricante f WHERE f.nombre = :nombre",Fabricante.class).setParameter("nombre", nombre).uniqueResult();
+            String sql = "SELECT p.fabricante FROM Producto p WHERE p.nombre = :nombreProd";
+            return session.createQuery(sql, Fabricante.class).setParameter("nombreProd", nombreProducto).uniqueResult();
         }
     }
-
+    public List<Producto> obtenerProductosDeFabricante(String nombreFabricante) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT p FROM Producto p WHERE p.fabricante.nombre = :nombreFab";
+            return session.createQuery(hql, Producto.class)
+                    .setParameter("nombreFab", nombreFabricante)
+                    .getResultList();
+        }
+    }
 
     public List<Fabricante> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
