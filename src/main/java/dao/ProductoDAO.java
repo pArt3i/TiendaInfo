@@ -15,16 +15,35 @@ public class ProductoDAO {
         }
     }
 
+    public Producto buscarPorNombre(String nombre) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "FROM Producto p WHERE LOWER(p.nombre) = LOWER(:nombre)", Producto.class)
+                    .setParameter("nombre", nombre)
+                    .uniqueResult();
+        }
+    }
+
+    public List<Producto> buscarPorPrecioMaximo(double precio) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "FROM Producto p WHERE p.precio <= :precio", Producto.class)
+                    .setParameter("precio", precio)
+                    .getResultList();
+        }
+    }
+
     public List<Producto> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Producto", Producto.class).getResultList();
         }
     }
 
-    // Nueva funcionalidad para listar productos de un fabricante concreto
     public List<Producto> buscarPorFabricante(String nombreFabricante) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Producto p WHERE LOWER(p.fabricante.nombre) = LOWER(:nom)", Producto.class).setParameter("nom", nombreFabricante).getResultList();
+            return session.createQuery("FROM Producto p WHERE LOWER(p.fabricante.nombre) = LOWER(:nom)", Producto.class)
+                    .setParameter("nom", nombreFabricante)
+                    .getResultList();
         }
     }
 
@@ -32,16 +51,22 @@ public class ProductoDAO {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            Fabricante fabricante = session.createQuery("FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nomb)", Fabricante.class).setParameter("nomb", nombreFabricante).uniqueResult();
+
+            Fabricante fabricante = session.createQuery("FROM Fabricante f WHERE LOWER(f.nombre) = LOWER(:nomb)", Fabricante.class)
+                    .setParameter("nomb", nombreFabricante)
+                    .uniqueResult();
+
             if (fabricante == null) {
                 fabricante = new Fabricante(nombreFabricante);
                 session.persist(fabricante);
             }
+
             nuevoProducto.setFabricante(fabricante);
             session.persist(nuevoProducto);
             tx.commit();
         } catch (Exception ex) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.getStatus().canRollback()) tx.rollback();
+            ex.printStackTrace();
         }
     }
 

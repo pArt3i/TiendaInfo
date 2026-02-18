@@ -4,7 +4,7 @@
 
 <hibernate-configuration>
     <session-factory>
-        <property name="connection.url">jdbc:mysql://10.203.28.144:3306/tienda</property>
+        <property name="connection.url">jdbc:mysql://10.203.28.113:3306/tienda</property>
 
         <property name="connection.username">usuario_tiendainformatica</property>
         <property name="connection.password">1234</property>

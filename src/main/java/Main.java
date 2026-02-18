@@ -86,7 +86,34 @@ public class Main {
                                 crearProducto();
                                 break;
                             case 2:
-                                listarProductos();
+                                do {
+                                    menuBuscarProducto();
+                                    System.out.print("Opcion (Pulse 0 para volver): ");
+                                    opcion3 = sc.nextInt();
+                                    sc.nextLine();
+                                    switch (opcion3) {
+                                        case 1:
+                                            listarProductos();
+                                            break;
+                                        case 2:
+                                            buscarProductoPorNombre();
+                                            break;
+                                        case 3:
+                                            listarProductosDeFabricante();
+                                            break;
+                                        case 4:
+                                            buscarFabricantePorProducto();
+                                            break;
+                                        case 5:
+                                            buscarProductoPorPrecio();
+                                            break;
+                                        case 0:
+                                            System.out.println("Volviendo...");
+                                            break;
+                                        default:
+                                            System.out.println("Opcion no valida");
+                                    }
+                                } while (opcion3 != 0);
                                 break;
                             case 3:
                                 modificarProducto();
@@ -109,13 +136,13 @@ public class Main {
         } while (opcion != 0);
     }
 
-    public static void menuBuscarFabricante() {
-        System.out.println("\n--- BUSCAR FABRICANTES ---");
-        System.out.println("1. Ver TODOS");
-        System.out.println("2. Buscar el Id por NOMBRE de Fabricante");
-        System.out.println("3. Buscar por NOMBRE de PRODUCTO");
-        System.out.println("4. Buscar por NOMBRE de Fabricante y obtener productos asociados");
-        System.out.println("0. Volver");
+
+
+    public static void menuPrincipal() {
+        System.out.println("\n=== MENU PRINCIPAL ===");
+        System.out.println("1. Fabricante");
+        System.out.println("2. Producto");
+        System.out.println("0. Salir");
     }
 
     public static void menuFabricante() {
@@ -136,12 +163,25 @@ public class Main {
         System.out.println("5. Volver");
     }
 
-    public static void menuPrincipal() {
-        System.out.println("\n=== MENU PRINCIPAL ===");
-        System.out.println("1. Fabricante");
-        System.out.println("2. Producto");
-        System.out.println("0. Salir");
+    public static void menuBuscarFabricante() {
+        System.out.println("\n--- BUSCAR FABRICANTES ---");
+        System.out.println("1. Ver TODOS");
+        System.out.println("2. Buscar el Id por NOMBRE de Fabricante");
+        System.out.println("3. Buscar por NOMBRE de PRODUCTO");
+        System.out.println("4. Buscar por NOMBRE de Fabricante y obtener productos asociados");
+        System.out.println("0. Volver");
     }
+
+    public static void menuBuscarProducto() {
+        System.out.println("\n--- BUSCAR PRODUCTOS ---");
+        System.out.println("1. Ver TODOS");
+        System.out.println("2. Buscar el Id por NOMBRE de Producto");
+        System.out.println("3. Buscar por NOMBRE de FABRICANTE");
+        System.out.println("4. Buscar por NOMBRE de Producto y obtener su Fabricante");
+        System.out.println("5. Buscar por PRECIO MÁXIMO");
+        System.out.println("0. Volver");
+    }
+
 
     private static void listarFabricantes() {
         var fabricantes = fabricanteDAO.listarTodos();
@@ -240,6 +280,26 @@ public class Main {
         var productos = productoDAO.listarTodos();
         for (Producto p : productos) {
             System.out.println(p.getCod() + ": " + p.getNombre() + " " + p.getPrecio() + " [" + p.getFabricante().getNombre() + "]");
+        }
+    }
+
+    private static void buscarProductoPorNombre() {
+        System.out.print("Introduce el nombre del producto: ");
+        Producto p = productoDAO.buscarPorNombre(sc.nextLine());
+        if (p != null) {
+            System.out.println("-> ID: " + p.getCod() + " | " + p.getNombre() + " | " + p.getPrecio() + "€");
+        } else {
+            System.out.println("Producto no encontrado.");
+        }
+    }
+
+    private static void buscarProductoPorPrecio() {
+        System.out.print("Introduce el precio máximo: ");
+        double max = sc.nextDouble(); sc.nextLine();
+        List<Producto> lista = productoDAO.buscarPorPrecioMaximo(max);
+        System.out.println("Productos encontrados: " + lista.size());
+        for (Producto p : lista) {
+            System.out.println("-> " + p.getNombre() + " (" + p.getPrecio() + "€)");
         }
     }
 
